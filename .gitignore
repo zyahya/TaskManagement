@@ -1,4 +1,6 @@
 todo.md
+*.db-shm
+*.db-wal
 
 ## A streamlined .gitignore for modern .NET projects
 ## including temporary files, build results, and
