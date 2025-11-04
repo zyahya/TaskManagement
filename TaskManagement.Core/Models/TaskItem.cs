@@ -6,5 +6,5 @@ public class TaskItem
     public string? Title { get; set; }
     public string? Description { get; set; }
     public DateTime DueDate { get; set; }
-    public TaskStatus Status { get; set; } = TaskStatus.Pending;
+    public TaskItemStatus Status { get; set; } = TaskItemStatus.Pending;
 }
