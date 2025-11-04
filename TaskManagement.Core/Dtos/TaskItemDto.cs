@@ -1,12 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace TaskManagement.Core.Models;
+using TaskManagement.Core.Models;
 
-public class TaskItem
+namespace TaskManagement.Core.Dtos;
+
+public class TaskItemDto
 {
-    [Key]
-    public int Id { get; set; }
-
     [Required, MinLength(1), MaxLength(150)]
     public string? Title { get; set; }
 
@@ -14,5 +13,5 @@ public class TaskItem
     public string? Description { get; set; }
 
     [Range(0, 2, ErrorMessage = "Invalid status value.")]
-    public TaskItemStatus Status { get; set; } = TaskItemStatus.Pending;
+    public TaskItemStatus Status { get; set; }
 }
