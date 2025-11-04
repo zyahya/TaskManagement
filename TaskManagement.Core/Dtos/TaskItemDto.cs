@@ -12,6 +12,6 @@ public class TaskItemDto
     [MinLength(1), MaxLength(500)]
     public string? Description { get; set; }
 
-    [Required]
+    [Range(0, 2, ErrorMessage = "Invalid status value.")]
     public TaskItemStatus Status { get; set; } = TaskItemStatus.Pending;
 }
