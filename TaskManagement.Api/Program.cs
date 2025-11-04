@@ -2,7 +2,9 @@ using Microsoft.EntityFrameworkCore;
 
 using Scalar.AspNetCore;
 
+using TaskManagement.Core.Interfaces;
 using TaskManagement.Data;
+using TaskManagement.Data.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +14,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 });
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 
 var app = builder.Build();
 
