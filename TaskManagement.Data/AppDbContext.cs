@@ -8,5 +8,5 @@ public class AppDbContext : DbContext
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-    DbSet<TaskItem> Tasks { get; set; }
+    public DbSet<TaskItem> Tasks { get; set; }
 }
