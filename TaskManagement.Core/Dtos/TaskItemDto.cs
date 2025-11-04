@@ -1,12 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace TaskManagement.Core.Models;
+using TaskManagement.Core.Models;
 
-public class TaskItem
+namespace TaskManagement.Core.Dtos;
+
+public class TaskItemDto
 {
-    [Key]
-    public int Id { get; set; }
-
     [Required, MinLength(1), MaxLength(150)]
     public string? Title { get; set; }
 
