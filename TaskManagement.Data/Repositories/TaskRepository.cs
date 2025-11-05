@@ -60,6 +60,24 @@ public class TaskRepository : ITaskRepository
             items = items.Where(item => item.Status == status);
         }
 
+        if (!string.IsNullOrEmpty(query.SortBy))
+        {
+            if (query.SortBy.Equals("Title", StringComparison.OrdinalIgnoreCase))
+            {
+                items = query.IsDescending ? items.OrderByDescending(item => item.Title) : items.OrderBy(item => item.Title);
+            }
+
+            if (query.SortBy.Equals("Description", StringComparison.OrdinalIgnoreCase))
+            {
+                items = query.IsDescending ? items.OrderByDescending(item => item.Description) : items.OrderBy(item => item.Description);
+            }
+
+            if (query.SortBy.Equals("Status", StringComparison.OrdinalIgnoreCase))
+            {
+                items = query.IsDescending ? items.OrderByDescending(item => item.Status) : items.OrderBy(item => item.Status);
+            }
+        }
+
         var skippedValues = (query.PageNumber - 1) * query.PageSize;
         items = items.Skip(skippedValues).Take(query.PageSize);
 
