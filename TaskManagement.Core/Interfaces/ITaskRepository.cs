@@ -11,5 +11,6 @@ public interface ITaskRepository
     Task<TaskItem?> GetByIdAsync(int id);
     Task<TaskItem?> UpdateAsync(int id, TaskItemDto taskItemDto);
     Task<TaskItem?> Delete(int id);
+    Task DeleteAll();
     Task PatchUpdateAsync(TaskItem item);
 }

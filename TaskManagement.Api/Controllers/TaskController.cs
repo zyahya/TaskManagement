@@ -64,12 +64,19 @@ namespace TaskManagement.Api.Controllers
             return Ok(item);
         }
 
-        [HttpDelete]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             var item = await _taskRepository.Delete(id);
             if (item == null) return NotFound();
 
+            return NoContent();
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> DeleteAll()
+        {
+            await _taskRepository.DeleteAll();
             return NoContent();
         }
     }
