@@ -43,9 +43,27 @@ public class TaskRepository : ITaskRepository
 
     public async Task<ICollection<TaskItem>> GetAllAsync(QueryObject query)
     {
-        var skipped = (query.PageNumber - 1) * query.PageSize;
+        var items = _context.Tasks.AsQueryable();
 
-        return await _context.Tasks.Skip(skipped).Take(query.PageSize).ToListAsync();
+        if (!string.IsNullOrEmpty(query.Title))
+        {
+            items = items.Where(item => item.Title.Contains(query.Title));
+        }
+
+        if (!string.IsNullOrEmpty(query.Description))
+        {
+            items = items.Where(item => item.Description.Contains(query.Description));
+        }
+
+        if (!string.IsNullOrEmpty(query.Status) && Enum.TryParse<TaskItemStatus>(query.Status, out var status))
+        {
+            items = items.Where(item => item.Status == status);
+        }
+
+        var skippedValues = (query.PageNumber - 1) * query.PageSize;
+        items = items.Skip(skippedValues).Take(query.PageSize);
+
+        return await items.ToListAsync();
     }
 
     public async Task<TaskItem?> GetByIdAsync(int id)
