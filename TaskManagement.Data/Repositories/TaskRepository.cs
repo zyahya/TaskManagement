@@ -41,6 +41,13 @@ public class TaskRepository : ITaskRepository
         return item;
     }
 
+    public async Task DeleteAll()
+    {
+        var tasks = await _context.Tasks.ToListAsync();
+        _context.Tasks.RemoveRange(tasks);
+        await _context.SaveChangesAsync();
+    }
+
     public async Task<ICollection<TaskItem>> GetAllAsync(QueryObject query)
     {
         var items = _context.Tasks.AsQueryable();
