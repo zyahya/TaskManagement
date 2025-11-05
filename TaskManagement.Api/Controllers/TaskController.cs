@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 
 using TaskManagement.Core.Dtos;
+using TaskManagement.Core.Helpers;
 using TaskManagement.Core.Interfaces;
 using TaskManagement.Core.Models;
 
@@ -25,9 +26,9 @@ namespace TaskManagement.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] QueryObject query)
         {
-            var items = await _taskRepository.GetAllAsync();
+            var items = await _taskRepository.GetAllAsync(query);
             return Ok(items);
         }
 

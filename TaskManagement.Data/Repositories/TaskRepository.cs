@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 
 using TaskManagement.Core.Dtos;
+using TaskManagement.Core.Helpers;
 using TaskManagement.Core.Interfaces;
 using TaskManagement.Core.Models;
 
@@ -40,10 +41,11 @@ public class TaskRepository : ITaskRepository
         return item;
     }
 
-    public async Task<ICollection<TaskItem>> GetAllAsync()
+    public async Task<ICollection<TaskItem>> GetAllAsync(QueryObject query)
     {
-        var items = await _context.Tasks.ToListAsync();
-        return items;
+        var skipped = (query.PageNumber - 1) * query.PageSize;
+
+        return await _context.Tasks.Skip(skipped).Take(query.PageSize).ToListAsync();
     }
 
     public async Task<TaskItem?> GetByIdAsync(int id)
