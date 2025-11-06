@@ -19,6 +19,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 });
 builder.Services.AddOpenApi();
 builder.Services.AddScoped<ITaskRepository, TaskRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 var app = builder.Build();
 
