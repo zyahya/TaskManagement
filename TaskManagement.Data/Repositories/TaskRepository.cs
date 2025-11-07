@@ -16,13 +16,13 @@ public class TaskRepository : ITaskRepository
         _context = context;
     }
 
-    public async Task<TaskItem> CreateAsync(TaskItemDto taskItemDto)
+    public async Task<TaskItem> CreateAsync(TaskItemDto request)
     {
         var taskItem = new TaskItem
         {
-            Title = taskItemDto.Title,
-            Description = taskItemDto.Description,
-            Status = taskItemDto.Status
+            Title = request.Title,
+            Description = request.Description,
+            Status = request.Status
         };
         await _context.Tasks.AddAsync(taskItem);
         await _context.SaveChangesAsync();
@@ -99,20 +99,20 @@ public class TaskRepository : ITaskRepository
         return item;
     }
 
-    public async Task PatchUpdateAsync(TaskItem item)
+    public async Task PatchUpdateAsync(TaskItem request)
     {
-        _context.Tasks.Update(item);
+        _context.Tasks.Update(request);
         await _context.SaveChangesAsync();
     }
 
-    public async Task<TaskItem?> UpdateAsync(int id, TaskItemDto taskItemDto)
+    public async Task<TaskItem?> UpdateAsync(int id, TaskItemDto request)
     {
         var item = await _context.Tasks.FindAsync(id);
         if (item == null) return null;
 
-        item.Title = taskItemDto.Title;
-        item.Description = taskItemDto.Description;
-        item.Status = taskItemDto.Status;
+        item.Title = request.Title;
+        item.Description = request.Description;
+        item.Status = request.Status;
 
         _context.Tasks.Update(item);
         await _context.SaveChangesAsync();
