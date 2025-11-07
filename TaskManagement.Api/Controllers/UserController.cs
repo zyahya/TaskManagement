@@ -1,10 +1,7 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 using TaskManagement.Core.Dtos;
 using TaskManagement.Core.Interfaces;
-using TaskManagement.Core.Models;
-using TaskManagement.Data.Repositories;
 
 namespace TaskManagement.Api.Controllers
 {
@@ -19,10 +16,21 @@ namespace TaskManagement.Api.Controllers
             _userRepository = userRepository;
         }
 
-        [HttpPost]
+        [HttpPost("register")]
         public async Task<IActionResult> Register(UserDto userDto)
         {
-            var user = await _userRepository.Register(userDto);
+            var user = await _userRepository.RegisterAsync(userDto);
+            if (user == null) return BadRequest("Username is already taken");
+
+            return Ok(user);
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(UserDto userDto) // TODO: This should return "token" as a string.
+        {
+            var user = await _userRepository.LoginAsync(userDto);
+            if (user == null) return BadRequest("Invalid username or password");
+
             return Ok(user);
         }
     }
