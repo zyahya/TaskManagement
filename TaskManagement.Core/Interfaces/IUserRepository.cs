@@ -6,5 +6,5 @@ namespace TaskManagement.Core.Interfaces;
 public interface IUserRepository
 {
     Task<User?> RegisterAsync(UserDto request);
-    Task<TokenResponseDto?> LoginAsync(UserDto request);
+    Task<string?> LoginAsync(UserDto request);
 }

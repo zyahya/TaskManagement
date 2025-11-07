@@ -1,14 +1,11 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
-
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Options;
 
 using TaskManagement.Core.Dtos;
 using TaskManagement.Core.Interfaces;
 using TaskManagement.Core.Models;
+using TaskManagement.Core.Services;
 
 
 namespace TaskManagement.Data.Repositories;
@@ -16,13 +13,15 @@ namespace TaskManagement.Data.Repositories;
 public class UserRepository : IUserRepository
 {
     private readonly AppDbContext _context;
+    private readonly IJwtService _jwtService;
 
-    public UserRepository(AppDbContext context)
+    public UserRepository(AppDbContext context, IJwtService jwtService)
     {
         _context = context;
+        _jwtService = jwtService;
     }
 
-    public async Task<TokenResponseDto?> LoginAsync(UserDto request)
+    public async Task<string?> LoginAsync(UserDto request)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
         if (user == null)
@@ -36,38 +35,9 @@ public class UserRepository : IUserRepository
             return null;
         }
 
-        TokenResponseDto token = await CreateTokenReposeAsync(user);
+        var token = _jwtService.CreateToken(user);
 
         return token;
-    }
-
-    private async Task<TokenResponseDto> CreateTokenReposeAsync(User user)
-    {
-        return new TokenResponseDto
-        {
-            AccessToken = CreateToken(user)
-        };
-    }
-
-    private string CreateToken(User user)
-    {
-        var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.Name, user.Username),
-        };
-
-        var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("tCQ8LUwMW605aVs1$6TytCQ8LUwMW605aVs1$6Ty"));
-        var signingCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
-
-        var tokenDescriptor = new JwtSecurityToken(
-            issuer: "myapp",
-            audience: "myapp",
-            claims: claims,
-            expires: DateTime.UtcNow.AddDays(1),
-            signingCredentials: signingCredentials
-        );
-
-        return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
     }
 
     public async Task<User?> RegisterAsync(UserDto request)

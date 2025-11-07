@@ -19,10 +19,10 @@ namespace TaskManagement.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(TaskItemDto taskItem)
+        public async Task<IActionResult> Create(TaskItemDto request)
         {
-            await _taskRepository.CreateAsync(taskItem);
-            return Ok(taskItem);
+            await _taskRepository.CreateAsync(request);
+            return Ok(request);
         }
 
         [HttpGet]
