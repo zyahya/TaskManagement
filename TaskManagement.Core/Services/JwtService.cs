@@ -17,7 +17,8 @@ public class JwtService(JwtSettings jwtSettings) : IJwtService
     {
         var claims = new List<Claim>
         {
-            new(ClaimTypes.Name, user.Username),
+            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new(ClaimTypes.Name, user.Username)
         };
 
         var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));

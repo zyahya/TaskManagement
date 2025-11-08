@@ -6,11 +6,11 @@ namespace TaskManagement.Core.Interfaces;
 
 public interface ITaskRepository
 {
-    Task<TaskItem> CreateAsync(TaskItemDto request);
-    Task<ICollection<TaskItem>> GetAllAsync(QueryObject query);
-    Task<TaskItem?> GetByIdAsync(int id);
-    Task<TaskItem?> UpdateAsync(int id, TaskItemDto request);
-    Task<TaskItem?> Delete(int id);
-    Task DeleteAll();
-    Task PatchUpdateAsync(TaskItem request);
+    Task<TaskItem> CreateAsync(TaskItemDto request, int UserId);
+    Task<ICollection<TaskItem>> GetAllAsync(QueryObject query, int userId);
+    Task<TaskItem?> GetByIdAsync(int id, int userId);
+    Task<TaskItem?> UpdateAsync(int id, int userId, TaskItemDto request);
+    Task<TaskItem?> Delete(int id, int userId);
+    Task DeleteAll(int userId);
+    Task<TaskItem?> PatchUpdateAsync(int id, int userId, PatchTaskItemDto request);
 }

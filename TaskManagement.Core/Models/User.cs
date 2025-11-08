@@ -21,4 +21,6 @@ public class User
 
     [Required, MinLength(1), MaxLength(256)]
     public string PasswordHash { get; set; }
+
+    public ICollection<TaskItem> Tasks { get; set; } = new List<TaskItem>();
 }
