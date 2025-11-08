@@ -7,14 +7,9 @@ namespace TaskManagement.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class UserController : ControllerBase
+public class AuthController(IUserRepository userRepository) : ControllerBase
 {
-    private IUserRepository _userRepository;
-
-    public UserController(IUserRepository userRepository)
-    {
-        _userRepository = userRepository;
-    }
+    private readonly IUserRepository _userRepository = userRepository;
 
     [HttpPost("register")]
     public async Task<IActionResult> Register(UserDto userDto)
@@ -26,11 +21,11 @@ public class UserController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login(UserDto userDto) // TODO: This should return "token" as a string.
+    public async Task<IActionResult> Login(UserDto userDto)
     {
-        var user = await _userRepository.LoginAsync(userDto);
-        if (user == null) return BadRequest("Invalid username or password");
+        var userToken = await _userRepository.LoginAsync(userDto);
+        if (userToken == null) return BadRequest("Invalid username or password");
 
-        return Ok(user);
+        return Ok(userToken);
     }
 }
