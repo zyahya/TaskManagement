@@ -7,9 +7,14 @@ using TaskManagement.Core.Models;
 
 namespace TaskManagement.Data.Repositories;
 
-public class TaskRepository(AppDbContext context) : ITaskRepository
+public class TaskRepository : ITaskRepository
 {
-    private readonly AppDbContext _context = context;
+    private readonly AppDbContext _context;
+
+    public TaskRepository(AppDbContext context)
+    {
+        _context = context;
+    }
 
     public async Task<TaskItem> CreateAsync(TaskItemDto request, int userId)
     {
@@ -50,7 +55,7 @@ public class TaskRepository(AppDbContext context) : ITaskRepository
 
     public async Task<ICollection<TaskItem>> GetAllAsync(QueryObject query, int userId)
     {
-        var tasks = _context.Tasks.AsNoTracking().Where(task => task.UserId == userId).AsQueryable();
+        var tasks = _context.Tasks.AsNoTracking().Where(task => task.UserId == userId).OrderBy(p => p.Id).AsQueryable();
 
         if (!string.IsNullOrEmpty(query.Title))
         {
@@ -84,6 +89,12 @@ public class TaskRepository(AppDbContext context) : ITaskRepository
                 tasks = query.IsDescending ? tasks.OrderByDescending(item => item.Status) : tasks.OrderBy(item => item.Status);
             }
         }
+
+        if (query.PageNumber < 1) query.PageNumber = 1;
+        if (query.PageSize < 1) query.PageNumber = 5;
+
+        const int maxPageSize = 50;
+        query.PageSize = query.PageSize > maxPageSize ? maxPageSize : query.PageSize;
 
         var skippedValues = (query.PageNumber - 1) * query.PageSize;
         tasks = tasks.Skip(skippedValues).Take(query.PageSize);

@@ -37,13 +37,13 @@ public class AuthController : ControllerBase
         return Ok(userToken);
     }
 
-    [HttpGet("refresh-token")]
-    public async Task<IActionResult> RefreshToken([FromQuery] int userId, [FromQuery] string refreshToken)
+    [HttpPost("refresh-token")]
+    public async Task<IActionResult> RefreshToken(RefreshTokenRequestDto request)
     {
-        var user = await _userRepository.GetByIdAsync(userId);
+        var user = await _userRepository.GetByIdAsync(request.UserId);
         if (user == null) return BadRequest("Invalid user");
 
-        var isValidRefreshToken = _authService.ValidateRefreshToken(user, refreshToken);
+        var isValidRefreshToken = _authService.ValidateRefreshToken(user, request.RefreshToken);
         if (!isValidRefreshToken) return BadRequest("Invalid refresh token");
 
         var newAccessToken = _authService.CreateToken(user);
