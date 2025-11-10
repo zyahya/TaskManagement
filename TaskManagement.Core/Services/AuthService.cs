@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 using Microsoft.IdentityModel.Tokens;
@@ -9,9 +10,22 @@ using TaskManagement.Core.Models;
 
 namespace TaskManagement.Core.Services;
 
-public class JwtService(JwtSettings jwtSettings) : IJwtService
+public class AuthService : IAuthService
 {
-    private JwtSettings _jwtSettings = jwtSettings;
+    private readonly JwtSettings _jwtSettings;
+
+    public AuthService(JwtSettings jwtSettings)
+    {
+        _jwtSettings = jwtSettings;
+    }
+
+    /*
+        - CreateToken
+        - GenerateRefreshToken
+        - ValidateRefreshToken
+
+
+     */
 
     public string CreateToken(User user)
     {
@@ -33,5 +47,23 @@ public class JwtService(JwtSettings jwtSettings) : IJwtService
         );
 
         return new JwtSecurityTokenHandler().WriteToken(tokenDescriptor);
+    }
+
+    public string GenerateRefreshToken()
+    {
+        var randomNumber = new byte[32];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(randomNumber);
+        return Convert.ToBase64String(randomNumber);
+    }
+
+    public bool ValidateRefreshToken(User user, string refreshToken)
+    {
+        if (user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+        {
+            return false;
+        }
+
+        return true;
     }
 }

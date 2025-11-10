@@ -1,33 +1,34 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 
 using TaskManagement.Core.Dtos;
 using TaskManagement.Core.Interfaces;
 using TaskManagement.Core.Models;
-using TaskManagement.Core.Services;
-
 
 namespace TaskManagement.Data.Repositories;
 
 public class UserRepository : IUserRepository
 {
     private readonly AppDbContext _context;
-    private readonly IJwtService _jwtService;
+    private readonly IAuthService _authService;
 
-    public UserRepository(AppDbContext context, IJwtService jwtService)
+    public UserRepository(AppDbContext context, IAuthService authService)
     {
         _context = context;
-        _jwtService = jwtService;
+        _authService = authService;
     }
 
-    public async Task<string?> LoginAsync(UserDto request)
+    public async Task<User?> GetByIdAsync(int id)
+    {
+        var user = await _context.Users.FindAsync(id);
+        if (user == null) return null;
+        return user;
+    }
+
+    public async Task<TokenResponseDto?> LoginAsync(UserDto request)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
-        if (user == null)
-        {
-            return null;
-        }
+        if (user == null) return null;
 
         var passwordVerification = new PasswordHasher<User>().VerifyHashedPassword(user, user.PasswordHash, request.Password);
         if (passwordVerification == PasswordVerificationResult.Failed)
@@ -35,9 +36,19 @@ public class UserRepository : IUserRepository
             return null;
         }
 
-        var token = _jwtService.CreateToken(user);
+        var accessToken = _authService.CreateToken(user);
+        var refreshToken = _authService.GenerateRefreshToken();
 
-        return token;
+        user.RefreshToken = refreshToken;
+        user.RefreshTokenExpiryTime = DateTime.Now.AddDays(7);
+
+        await _context.SaveChangesAsync();
+
+        return new TokenResponseDto
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken
+        };
     }
 
     public async Task<User?> RegisterAsync(UserDto request)
@@ -57,5 +68,11 @@ public class UserRepository : IUserRepository
         await _context.SaveChangesAsync();
 
         return user;
+    }
+
+    public Task UpdateAsync(User user)
+    {
+        _context.Users.Update(user);
+        return _context.SaveChangesAsync();
     }
 }

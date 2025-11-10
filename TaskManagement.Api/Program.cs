@@ -7,14 +7,18 @@ using Microsoft.IdentityModel.Tokens;
 
 using Scalar.AspNetCore;
 
+using TaskManagement.Api.Filters;
+using TaskManagement.Api.Middlewares;
 using TaskManagement.Core.Interfaces;
 using TaskManagement.Core.Models;
 using TaskManagement.Core.Services;
 using TaskManagement.Data;
 using TaskManagement.Data.Repositories;
 
-
 var builder = WebApplication.CreateBuilder(args);
+
+var configurationSources = builder.Configuration.Sources.ToList();
+Console.WriteLine(configurationSources);
 
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 
@@ -22,11 +26,18 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseSqlite("Data Source=data.db");
 });
-builder.Services.AddControllers().AddJsonOptions(options =>
+
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<LogActivityFilter>(); // global action filter
+    options.Filters.Add<LogSensitiveActionAttribute>();
+})
+.AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.Converters.Add(
         new System.Text.Json.Serialization.JsonStringEnumConverter());
 });
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -40,13 +51,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = jwtSection["Audience"],
             ValidateLifetime = true,
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtSection["Key"] ?? throw new InvalidOperationException("JWT Key is missing from configuration."))),
+                Encoding.UTF8.GetBytes(jwtSection["Key"] ??
+                    throw new InvalidOperationException("JWT Key is missing from configuration."))),
             ValidateIssuerSigningKey = true
         };
     });
+
 builder.Services.AddOpenApi();
 builder.Services.AddSingleton(resolver => resolver.GetRequiredService<IOptions<JwtSettings>>().Value);
-builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
@@ -57,6 +70,10 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.MapScalarApiReference();
 }
+
+app.UseStaticFiles();
+
+app.UseMiddleware<ProfilingMiddleware>();
 
 app.UseHttpsRedirection();
 

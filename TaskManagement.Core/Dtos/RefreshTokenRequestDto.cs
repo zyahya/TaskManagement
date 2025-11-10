@@ -1,7 +1,7 @@
 namespace TaskManagement.Core.Dtos;
 
-public class TokenResponseDto
+public class RefreshTokenRequestDto
 {
-    public required string AccessToken { get; set; }
+    public int UserId { get; set; }
     public required string RefreshToken { get; set; }
 }
