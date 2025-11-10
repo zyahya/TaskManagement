@@ -9,9 +9,14 @@ namespace TaskManagement.Api.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class TaskController(ITaskRepository taskRepository) : ControllerBase
+public class TaskController : ControllerBase
 {
-    private readonly ITaskRepository _taskRepository = taskRepository;
+    private readonly ITaskRepository _taskRepository;
+
+    public TaskController(ITaskRepository taskRepository)
+    {
+        _taskRepository = taskRepository;
+    }
 
     [Authorize]
     [HttpPost]
@@ -50,7 +55,7 @@ public class TaskController(ITaskRepository taskRepository) : ControllerBase
     }
 
     [Authorize]
-    [HttpPut]
+    [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, TaskItemDto request)
     {
         if (!User.TryGetUserId(out var userId))
