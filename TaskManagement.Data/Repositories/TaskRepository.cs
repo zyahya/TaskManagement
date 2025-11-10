@@ -50,7 +50,7 @@ public class TaskRepository(AppDbContext context) : ITaskRepository
 
     public async Task<ICollection<TaskItem>> GetAllAsync(QueryObject query, int userId)
     {
-        var tasks = _context.Tasks.Where(task => task.UserId == userId).AsQueryable();
+        var tasks = _context.Tasks.AsNoTracking().Where(task => task.UserId == userId).AsQueryable();
 
         if (!string.IsNullOrEmpty(query.Title))
         {
@@ -93,7 +93,7 @@ public class TaskRepository(AppDbContext context) : ITaskRepository
 
     public async Task<TaskItem?> GetByIdAsync(int id, int userId)
     {
-        var task = await _context.Tasks
+        var task = await _context.Tasks.AsNoTracking()
             .Where(task => task.UserId == userId)
             .FirstOrDefaultAsync(task => task.Id == id);
 
