@@ -11,11 +11,13 @@ public class UserRepository : IUserRepository
 {
     private readonly AppDbContext _context;
     private readonly IAuthService _authService;
+    private readonly IPasswordHasher<User> _passwordHasher;
 
-    public UserRepository(AppDbContext context, IAuthService authService)
+    public UserRepository(AppDbContext context, IAuthService authService, IPasswordHasher<User> passwordHasher)
     {
         _context = context;
         _authService = authService;
+        _passwordHasher = passwordHasher;
     }
 
     public async Task<User?> GetByIdAsync(int id)
@@ -30,7 +32,7 @@ public class UserRepository : IUserRepository
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
         if (user == null) return null;
 
-        var passwordVerification = new PasswordHasher<User>().VerifyHashedPassword(user, user.PasswordHash, request.Password);
+        var passwordVerification = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
         if (passwordVerification == PasswordVerificationResult.Failed)
         {
             return null;
@@ -59,7 +61,7 @@ public class UserRepository : IUserRepository
         }
 
         var user = new User();
-        var hashPassword = new PasswordHasher<User>().HashPassword(user, request.Password);
+        var hashPassword = _passwordHasher.HashPassword(user, request.Password);
 
         user.Username = request.Username;
         user.PasswordHash = hashPassword;

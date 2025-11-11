@@ -10,7 +10,7 @@ public interface ITaskRepository
     Task<ICollection<TaskItem>> GetAllAsync(QueryObject query, int userId);
     Task<TaskItem?> GetByIdAsync(int id, int userId);
     Task<TaskItem?> UpdateAsync(int id, int userId, TaskItemDto request);
-    Task<TaskItem?> Delete(int id, int userId);
-    Task DeleteAll(int userId);
+    Task<TaskItem?> DeleteAsync(int id, int userId);
+    Task DeleteAllAsync(int userId);
     Task<TaskItem?> PatchUpdateAsync(int id, int userId, PatchTaskItemDto request);
 }

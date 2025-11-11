@@ -7,11 +7,11 @@ namespace TaskManagement.Core.Dtos;
 public class TaskItemDto
 {
     [Required, MinLength(1), MaxLength(150)]
-    public string? Title { get; set; }
+    public string Title { get; set; } = default!;
 
     [MinLength(1), MaxLength(500)]
     public string? Description { get; set; }
 
     [Range(0, 2, ErrorMessage = "Invalid status value.")]
-    public TaskItemStatus Status { get; set; }
+    public TaskItemStatus Status { get; set; } = TaskItemStatus.Pending;
 }

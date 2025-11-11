@@ -87,7 +87,7 @@ public class TaskController : ControllerBase
         if (!User.TryGetUserId(out var userId))
             return Unauthorized(new { message = "Invalid token: user id missing." });
 
-        var item = await _taskRepository.Delete(id, userId);
+        var item = await _taskRepository.DeleteAsync(id, userId);
         if (item == null) return NotFound();
 
         return NoContent();
@@ -100,7 +100,7 @@ public class TaskController : ControllerBase
         if (!User.TryGetUserId(out var userId))
             return Unauthorized(new { message = "Invalid token: user id missing." });
 
-        await _taskRepository.DeleteAll(userId);
+        await _taskRepository.DeleteAllAsync(userId);
         return NoContent();
     }
 }

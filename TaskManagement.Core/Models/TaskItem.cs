@@ -8,7 +8,7 @@ public class TaskItem
     public int Id { get; set; }
 
     [Required, MinLength(1), MaxLength(150)]
-    public string? Title { get; set; }
+    public string Title { get; set; } = default!;
 
     [MinLength(1), MaxLength(500)]
     public string? Description { get; set; }

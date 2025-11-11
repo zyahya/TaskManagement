@@ -32,7 +32,7 @@ public class TaskRepository : ITaskRepository
         return taskItem;
     }
 
-    public async Task<TaskItem?> Delete(int id, int userId)
+    public async Task<TaskItem?> DeleteAsync(int id, int userId)
     {
         var tasks = await _context.Tasks
             .Where(task => task.UserId == userId)
@@ -46,7 +46,7 @@ public class TaskRepository : ITaskRepository
         return tasks;
     }
 
-    public async Task DeleteAll(int userId)
+    public async Task DeleteAllAsync(int userId)
     {
         var tasks = await _context.Tasks.Where(task => task.UserId == userId).ToListAsync();
         _context.Tasks.RemoveRange(tasks);
@@ -55,51 +55,44 @@ public class TaskRepository : ITaskRepository
 
     public async Task<ICollection<TaskItem>> GetAllAsync(QueryObject query, int userId)
     {
-        var tasks = _context.Tasks.AsNoTracking().Where(task => task.UserId == userId).OrderBy(p => p.Id).AsQueryable();
+        var queryableTasks = _context.Tasks.AsNoTracking().OrderBy(task => task.Id).Where(task => task.UserId == userId).AsQueryable();
 
         if (!string.IsNullOrEmpty(query.Title))
         {
-            tasks = tasks.Where(item => item.Title.Contains(query.Title));
-        }
-
-        if (!string.IsNullOrEmpty(query.Description))
-        {
-            tasks = tasks.Where(item => item.Description.Contains(query.Description));
+            queryableTasks = queryableTasks.Where(item => item.Title.Contains(query.Title));
         }
 
         if (!string.IsNullOrEmpty(query.Status) && Enum.TryParse<TaskItemStatus>(query.Status, out var status))
         {
-            tasks = tasks.Where(item => item.Status == status);
+            queryableTasks = queryableTasks.Where(item => item.Status == status);
         }
 
         if (!string.IsNullOrEmpty(query.SortBy))
         {
-            if (query.SortBy.Equals("Title", StringComparison.OrdinalIgnoreCase))
+            switch (query.SortBy.ToLower())
             {
-                tasks = query.IsDescending ? tasks.OrderByDescending(item => item.Title) : tasks.OrderBy(item => item.Title);
-            }
-
-            if (query.SortBy.Equals("Description", StringComparison.OrdinalIgnoreCase))
-            {
-                tasks = query.IsDescending ? tasks.OrderByDescending(item => item.Description) : tasks.OrderBy(item => item.Description);
-            }
-
-            if (query.SortBy.Equals("Status", StringComparison.OrdinalIgnoreCase))
-            {
-                tasks = query.IsDescending ? tasks.OrderByDescending(item => item.Status) : tasks.OrderBy(item => item.Status);
+                case "title":
+                    queryableTasks = query.IsDescending ? queryableTasks.OrderByDescending(item => item.Title) : queryableTasks.OrderBy(item => item.Title);
+                    break;
+                case "status":
+                    queryableTasks = query.IsDescending ? queryableTasks.OrderByDescending(item => item.Status) : queryableTasks.OrderBy(item => item.Status);
+                    break;
+                default:
+                    queryableTasks = query.IsDescending ? queryableTasks.OrderByDescending(item => item.Id) : queryableTasks.OrderBy(item => item.Id);
+                    break;
             }
         }
 
         if (query.PageNumber < 1) query.PageNumber = 1;
-        if (query.PageSize < 1) query.PageNumber = 5;
+        if (query.PageSize < 1) query.PageSize = 5;
 
         const int maxPageSize = 50;
         query.PageSize = query.PageSize > maxPageSize ? maxPageSize : query.PageSize;
 
         var skippedValues = (query.PageNumber - 1) * query.PageSize;
-        tasks = tasks.Skip(skippedValues).Take(query.PageSize);
+        queryableTasks = queryableTasks.Skip(skippedValues).Take(query.PageSize);
 
-        return await tasks.ToListAsync();
+        return await queryableTasks.ToListAsync();
     }
 
     public async Task<TaskItem?> GetByIdAsync(int id, int userId)
@@ -121,9 +114,10 @@ public class TaskRepository : ITaskRepository
 
         if (task == null) return null;
 
-        if (task.Title != null) task.Title = request.Title;
-        if (task.Description != null) task.Description = request.Description;
-        if (task.Status != null) task.Status = (TaskItemStatus)request.Status;
+        if (request.Title != null) task.Title = request.Title;
+        if (request.Description != null) task.Description = request.Description;
+
+        if (request.Status != null) task.Status = (TaskItemStatus)request.Status;
 
         await _context.SaveChangesAsync();
         return task;
@@ -141,7 +135,6 @@ public class TaskRepository : ITaskRepository
         task.Description = request.Description;
         task.Status = request.Status;
 
-        _context.Tasks.Update(task);
         await _context.SaveChangesAsync();
 
         return task;
