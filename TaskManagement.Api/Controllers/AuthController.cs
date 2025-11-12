@@ -20,7 +20,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register(UserDto userDto)
+    public async Task<IActionResult> Register(UserLoginDto userDto)
     {
         var user = await _userRepository.RegisterAsync(userDto);
         if (user == null) return BadRequest("Username is already taken");
@@ -29,7 +29,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login(UserDto userDto)
+    public async Task<IActionResult> Login(UserLoginDto userDto)
     {
         var userToken = await _userRepository.LoginAsync(userDto);
         if (userToken == null) return BadRequest("Invalid username or password");

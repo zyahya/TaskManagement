@@ -27,7 +27,7 @@ public class UserRepository : IUserRepository
         return user;
     }
 
-    public async Task<TokenResponseDto?> LoginAsync(UserDto request)
+    public async Task<TokenResponseDto?> LoginAsync(UserLoginDto request)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
         if (user == null) return null;
@@ -53,7 +53,7 @@ public class UserRepository : IUserRepository
         };
     }
 
-    public async Task<User?> RegisterAsync(UserDto request)
+    public async Task<User?> RegisterAsync(UserLoginDto request)
     {
         if (await _context.Users.AnyAsync(u => u.Username == request.Username))
         {
