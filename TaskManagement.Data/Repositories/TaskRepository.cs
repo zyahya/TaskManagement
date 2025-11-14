@@ -57,42 +57,54 @@ public class TaskRepository : ITaskRepository
     {
         var queryableTasks = _context.Tasks.AsNoTracking().OrderBy(task => task.Id).Where(task => task.UserId == userId).AsQueryable();
 
-        if (!string.IsNullOrEmpty(query.Title))
-        {
-            queryableTasks = queryableTasks.Where(item => item.Title.Contains(query.Title));
-        }
-
-        if (!string.IsNullOrEmpty(query.Status) && Enum.TryParse<TaskItemStatus>(query.Status, out var status))
-        {
-            queryableTasks = queryableTasks.Where(item => item.Status == status);
-        }
-
-        if (!string.IsNullOrEmpty(query.SortBy))
-        {
-            switch (query.SortBy.ToLower())
-            {
-                case "title":
-                    queryableTasks = query.IsDescending ? queryableTasks.OrderByDescending(item => item.Title) : queryableTasks.OrderBy(item => item.Title);
-                    break;
-                case "status":
-                    queryableTasks = query.IsDescending ? queryableTasks.OrderByDescending(item => item.Status) : queryableTasks.OrderBy(item => item.Status);
-                    break;
-                default:
-                    queryableTasks = query.IsDescending ? queryableTasks.OrderByDescending(item => item.Id) : queryableTasks.OrderBy(item => item.Id);
-                    break;
-            }
-        }
-
-        if (query.PageNumber < 1) query.PageNumber = 1;
-        if (query.PageSize < 1) query.PageSize = 5;
-
-        const int maxPageSize = 50;
-        query.PageSize = query.PageSize > maxPageSize ? maxPageSize : query.PageSize;
-
-        var skippedValues = (query.PageNumber - 1) * query.PageSize;
-        queryableTasks = queryableTasks.Skip(skippedValues).Take(query.PageSize);
+        queryableTasks = ApplyFilters(queryableTasks, query);
+        queryableTasks = ApplySorting(queryableTasks, query);
+        queryableTasks = ApplyPagination(queryableTasks, query);
 
         return await queryableTasks.ToListAsync();
+    }
+
+    private static IQueryable<TaskItem> ApplyFilters(IQueryable<TaskItem> query, QueryObject options)
+    {
+        if (!string.IsNullOrEmpty(options.Title))
+        {
+            query = query.Where(item => item.Title.Contains(options.Title));
+        }
+
+        if (!string.IsNullOrEmpty(options.Status) && Enum.TryParse<TaskItemStatus>(options.Status, out var status))
+        {
+            query = query.Where(item => item.Status == status);
+        }
+
+        return query;
+    }
+
+    private static IQueryable<TaskItem> ApplySorting(IQueryable<TaskItem> query, QueryObject options)
+    {
+        if (!string.IsNullOrEmpty(options.SortBy))
+        {
+            query = options.SortBy?.ToLowerInvariant() switch
+            {
+                "title" => options.IsDescending ? query.OrderByDescending(item => item.Title) : query.OrderBy(item => item.Title),
+                "status" => options.IsDescending ? query.OrderByDescending(item => item.Status) : query.OrderBy(item => item.Status),
+                _ => options.IsDescending ? query.OrderByDescending(item => item.Id) : query.OrderBy(item => item.Id),
+            };
+        }
+
+        return query;
+    }
+
+    private static IQueryable<TaskItem> ApplyPagination(IQueryable<TaskItem> query, QueryObject options)
+    {
+        int PageNumber = options.PageNumber < 1 ? 1 : options.PageNumber;
+        int PageSize = options.PageSize < 1 ? 5 : options.PageSize;
+
+        const int maxPageSize = 50;
+        PageSize = PageSize > maxPageSize ? maxPageSize : PageSize;
+
+        var skippedValues = (PageNumber - 1) * PageSize;
+
+        return query.Skip(skippedValues).Take(PageSize);
     }
 
     public async Task<TaskItem?> GetByIdAsync(int id, int userId)
@@ -116,10 +128,10 @@ public class TaskRepository : ITaskRepository
 
         if (request.Title != null) task.Title = request.Title;
         if (request.Description != null) task.Description = request.Description;
-
         if (request.Status != null) task.Status = (TaskItemStatus)request.Status;
 
         await _context.SaveChangesAsync();
+
         return task;
     }
 
