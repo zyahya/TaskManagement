@@ -29,6 +29,15 @@ public class UserRepository : IUserRepository
 
     public async Task<TokenResponseDto?> LoginAsync(UserLoginDto request)
     {
+
+        var user = await AuthenticateUser(request);
+        if (user == null) return null;
+
+        return await GenerateTokensAsync(user);
+    }
+
+    private async Task<User?> AuthenticateUser(UserLoginDto request)
+    {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
         if (user == null) return null;
 
@@ -38,11 +47,16 @@ public class UserRepository : IUserRepository
             return null;
         }
 
+        return user;
+    }
+
+    private async Task<TokenResponseDto> GenerateTokensAsync(User user)
+    {
         var accessToken = _authService.CreateToken(user);
         var refreshToken = _authService.GenerateRefreshToken();
 
         user.RefreshToken = refreshToken;
-        user.RefreshTokenExpiryTime = DateTime.Now.AddDays(7);
+        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
 
         await _context.SaveChangesAsync();
 
@@ -55,15 +69,27 @@ public class UserRepository : IUserRepository
 
     public async Task<User?> RegisterAsync(UserLoginDto request)
     {
-        if (await _context.Users.AnyAsync(u => u.Username == request.Username))
+        if (await IsUserExistsAsync(request.Username))
         {
             return null;
         }
 
-        var user = new User();
-        var hashPassword = _passwordHasher.HashPassword(user, request.Password);
+        var user = await CreateUserWithHashedPassword(request.Username, request.Password);
 
-        user.Username = request.Username;
+        return user;
+    }
+
+    private async Task<bool> IsUserExistsAsync(string username)
+    {
+        return await _context.Users.AnyAsync(u => u.Username == username);
+    }
+
+    private async Task<User> CreateUserWithHashedPassword(string username, string password)
+    {
+        var user = new User();
+        var hashPassword = _passwordHasher.HashPassword(user, password);
+
+        user.Username = username;
         user.PasswordHash = hashPassword;
 
         await _context.Users.AddAsync(user);

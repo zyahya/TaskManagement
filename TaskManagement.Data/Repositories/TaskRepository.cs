@@ -34,16 +34,14 @@ public class TaskRepository : ITaskRepository
 
     public async Task<TaskItem?> DeleteAsync(int id, int userId)
     {
-        var tasks = await _context.Tasks
-            .Where(task => task.UserId == userId)
-            .FirstOrDefaultAsync(task => task.Id == id);
+        var task = await GetByIdAsync(id, userId);
 
-        if (tasks == null) return null;
+        if (task == null) return null;
 
-        _context.Remove(tasks);
+        _context.Remove(task);
         await _context.SaveChangesAsync();
 
-        return tasks;
+        return task;
     }
 
     public async Task DeleteAllAsync(int userId)
@@ -120,9 +118,7 @@ public class TaskRepository : ITaskRepository
 
     public async Task<TaskItem?> PatchUpdateAsync(int id, int userId, PatchTaskItemDto request)
     {
-        var task = await _context.Tasks
-            .Where(task => task.UserId == userId)
-            .FirstOrDefaultAsync(task => task.Id == id);
+        var task = await GetByIdAsync(id, userId);
 
         if (task == null) return null;
 
@@ -137,9 +133,7 @@ public class TaskRepository : ITaskRepository
 
     public async Task<TaskItem?> UpdateAsync(int id, int userId, TaskItemDto request)
     {
-        var task = await _context.Tasks
-            .Where(task => task.UserId == userId)
-            .FirstOrDefaultAsync(task => task.Id == id);
+        var task = await GetByIdAsync(id, userId);
 
         if (task == null) return null;
 
