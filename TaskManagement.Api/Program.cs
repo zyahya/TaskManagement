@@ -1,21 +1,3 @@
-using System.Text;
-
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
-
-using Scalar.AspNetCore;
-
-using TaskManagement.Api.Filters;
-using TaskManagement.Api.Middlewares;
-using TaskManagement.Core.Interfaces;
-using TaskManagement.Core.Models;
-using TaskManagement.Core.Services;
-using TaskManagement.Data;
-using TaskManagement.Data.Repositories;
-
 var builder = WebApplication.CreateBuilder(args);
 
 var configurationSources = builder.Configuration.Sources.ToList();

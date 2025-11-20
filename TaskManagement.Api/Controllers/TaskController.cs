@@ -1,9 +1,5 @@
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-
 using TaskManagement.Core.Dtos;
 using TaskManagement.Core.Helpers;
-using TaskManagement.Core.Interfaces;
 
 namespace TaskManagement.Api.Controllers;
 

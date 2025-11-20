@@ -1,8 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
-
 using TaskManagement.Core.Dtos;
-using TaskManagement.Core.Interfaces;
-using TaskManagement.Core.Models;
 
 namespace TaskManagement.Api.Controllers;
 

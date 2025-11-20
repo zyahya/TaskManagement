@@ -69,10 +69,7 @@ public class UserRepository : IUserRepository
 
     public async Task<User?> RegisterAsync(UserLoginDto request)
     {
-        if (await IsUserExistsAsync(request.Username))
-        {
-            return null;
-        }
+        if (await IsUserExistsAsync(request.Username)) return null;
 
         var user = await CreateUserWithHashedPassword(request.Username, request.Password);
 
