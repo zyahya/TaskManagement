@@ -10,9 +10,18 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<TaskItem>()
-            .Property(ti => ti.Status)
-            .HasDefaultValue(0);
+        modelBuilder.Entity<TaskItem>(te =>
+        {
+            te.Property(ti => ti.Title)
+                .HasMaxLength(100);
+
+            te.Property(ti => ti.Description)
+                .HasMaxLength(200);
+
+            te.Property(ti => ti.Status)
+                .HasDefaultValue(0);
+        });
+
     }
 
     public DbSet<TaskItem> Tasks { get; set; }
