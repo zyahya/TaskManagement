@@ -23,6 +23,9 @@ public class AppDbContext : DbContext
                 .IsRequired();
         });
 
+        modelBuilder.Entity<User>()
+            .HasMany(u => u.TaskItems)
+            .WithOne(t => t.User);
     }
 
     public DbSet<TaskItem> Tasks { get; set; }
