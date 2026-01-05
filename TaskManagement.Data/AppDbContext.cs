@@ -19,7 +19,8 @@ public class AppDbContext : DbContext
                 .HasMaxLength(200);
 
             te.Property(ti => ti.Status)
-                .HasDefaultValue(0);
+                .HasDefaultValue(TaskItemStatus.Pending)
+                .IsRequired();
         });
 
     }
