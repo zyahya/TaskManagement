@@ -24,15 +24,17 @@ namespace TaskManagement.Data.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Description")
-                        .HasMaxLength(500)
+                        .HasMaxLength(200)
                         .HasColumnType("TEXT");
 
                     b.Property<int>("Status")
-                        .HasColumnType("INTEGER");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(0);
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasMaxLength(150)
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<int>("UserId")
@@ -75,7 +77,7 @@ namespace TaskManagement.Data.Migrations
             modelBuilder.Entity("TaskManagement.Core.Models.TaskItem", b =>
                 {
                     b.HasOne("TaskManagement.Core.Models.User", "User")
-                        .WithMany("Tasks")
+                        .WithMany("TaskItems")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -85,7 +87,7 @@ namespace TaskManagement.Data.Migrations
 
             modelBuilder.Entity("TaskManagement.Core.Models.User", b =>
                 {
-                    b.Navigation("Tasks");
+                    b.Navigation("TaskItems");
                 });
 #pragma warning restore 612, 618
         }

@@ -13,7 +13,7 @@ public class User
     [Required, MinLength(1), MaxLength(256)]
     public string PasswordHash { get; set; } = default!;
 
-    public ICollection<TaskItem> Tasks { get; set; } = [];
+    public ICollection<TaskItem> TaskItems { get; set; } = [];
 
     public string? RefreshToken { get; set; }
 

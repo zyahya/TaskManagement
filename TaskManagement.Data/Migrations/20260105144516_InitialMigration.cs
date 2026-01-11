@@ -19,8 +19,8 @@ namespace TaskManagement.Data.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     Username = table.Column<string>(type: "TEXT", maxLength: 14, nullable: false),
                     PasswordHash = table.Column<string>(type: "TEXT", maxLength: 256, nullable: false),
-                    RefreshToken = table.Column<string>(type: "TEXT", nullable: false),
-                    RefreshTokenExpiryTime = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    RefreshToken = table.Column<string>(type: "TEXT", nullable: true),
+                    RefreshTokenExpiryTime = table.Column<DateTime>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -33,9 +33,9 @@ namespace TaskManagement.Data.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Title = table.Column<string>(type: "TEXT", maxLength: 150, nullable: false),
-                    Description = table.Column<string>(type: "TEXT", maxLength: 500, nullable: true),
-                    Status = table.Column<int>(type: "INTEGER", nullable: false),
+                    Title = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    Description = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true),
+                    Status = table.Column<int>(type: "INTEGER", nullable: false, defaultValue: 0),
                     UserId = table.Column<int>(type: "INTEGER", nullable: false)
                 },
                 constraints: table =>
