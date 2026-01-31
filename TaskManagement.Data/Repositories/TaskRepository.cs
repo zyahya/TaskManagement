@@ -99,7 +99,7 @@ public class TaskRepository : ITaskRepository
 
     public async Task<TaskItem?> GetAsync(int id, int userId)
     {
-        var task = await _context.Tasks.AsNoTracking()
+        var task = await _context.Tasks
             .Where(task => task.UserId == userId)
             .FirstOrDefaultAsync(task => task.Id == id);
 
