@@ -16,16 +16,9 @@ public class TaskRepository : ITaskRepository
         _context = context;
     }
 
-    public async Task<TaskItem> CreateAsync(TaskItemDto request, int userId)
+    public async Task<TaskItem> CreateAsync(TaskItem taskItem, int userId)
     {
-        var taskItem = new TaskItem
-        {
-            Title = request.Title,
-            Description = request.Description,
-            Status = request.Status,
-            UserId = userId
-        };
-
+        taskItem.UserId = userId;
         await _context.Tasks.AddAsync(taskItem);
         await _context.SaveChangesAsync();
 
@@ -34,8 +27,7 @@ public class TaskRepository : ITaskRepository
 
     public async Task<TaskItem?> DeleteAsync(int id, int userId)
     {
-        var task = await GetByIdAsync(id, userId);
-
+        var task = await GetAsync(id, userId);
         if (task == null) return null;
 
         _context.Remove(task);
@@ -105,7 +97,7 @@ public class TaskRepository : ITaskRepository
         return query.Skip(skippedValues).Take(PageSize);
     }
 
-    public async Task<TaskItem?> GetByIdAsync(int id, int userId)
+    public async Task<TaskItem?> GetAsync(int id, int userId)
     {
         var task = await _context.Tasks.AsNoTracking()
             .Where(task => task.UserId == userId)
@@ -116,30 +108,14 @@ public class TaskRepository : ITaskRepository
         return task;
     }
 
-    public async Task<TaskItem?> PatchUpdateAsync(int id, int userId, PatchTaskItemDto request)
+    public async Task<TaskItem?> UpdateAsync(int id, int userId, TaskItem taskItem)
     {
-        var task = await GetByIdAsync(id, userId);
-
+        var task = await GetAsync(id, userId);
         if (task == null) return null;
 
-        if (request.Title != null) task.Title = request.Title;
-        if (request.Description != null) task.Description = request.Description;
-        if (request.Status != null) task.Status = (TaskItemStatus)request.Status;
-
-        await _context.SaveChangesAsync();
-
-        return task;
-    }
-
-    public async Task<TaskItem?> UpdateAsync(int id, int userId, TaskItemDto request)
-    {
-        var task = await GetByIdAsync(id, userId);
-
-        if (task == null) return null;
-
-        task.Title = request.Title;
-        task.Description = request.Description;
-        task.Status = request.Status;
+        task.Title = taskItem.Title;
+        task.Description = taskItem.Description;
+        task.Status = taskItem.Status;
 
         await _context.SaveChangesAsync();
 

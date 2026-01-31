@@ -1,5 +1,7 @@
-using TaskManagement.Core.Dtos;
+using TaskManagement.Core.Contracts.Request;
+using TaskManagement.Core.Contracts;
 using TaskManagement.Core.Helpers;
+using Mapster;
 
 namespace TaskManagement.Api.Controllers;
 
@@ -16,14 +18,14 @@ public class TaskController : ControllerBase
 
     [Authorize]
     [HttpPost]
-    public async Task<IActionResult> Create(TaskItemDto request)
+    public async Task<IActionResult> Create([FromBody] TaskItemRequest request)
     {
         if (!User.TryGetUserId(out var userId))
             return Unauthorized(new { message = "Invalid token: user id missing." });
 
-        await _taskRepository.CreateAsync(request, userId);
+        await _taskRepository.CreateAsync(request.Adapt<TaskItem>(), userId);
 
-        return Ok(request);
+        return CreatedAtAction(nameof(GetById), request.Adapt<TaskItem>().Id, request);
     }
 
     [Authorize]
@@ -39,12 +41,12 @@ public class TaskController : ControllerBase
 
     [Authorize]
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(int id)
+    public async Task<IActionResult> GetById([FromRoute] int id)
     {
         if (!User.TryGetUserId(out var userId))
             return Unauthorized(new { message = "Invalid token: user id missing." });
 
-        var item = await _taskRepository.GetByIdAsync(id, userId);
+        var item = await _taskRepository.GetAsync(id, userId);
         if (item == null) return NotFound();
 
         return Ok(item);
@@ -52,33 +54,20 @@ public class TaskController : ControllerBase
 
     [Authorize]
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, TaskItemDto request)
+    public async Task<IActionResult> Update([FromRoute] int id, [FromBody] TaskItemRequest request)
     {
         if (!User.TryGetUserId(out var userId))
             return Unauthorized(new { message = "Invalid token: user id missing." });
 
-        var updatedTask = await _taskRepository.UpdateAsync(id, userId, request);
+        var updatedTask = await _taskRepository.UpdateAsync(id, userId, request.Adapt<TaskItem>());
         if (updatedTask == null) return NotFound();
 
-        return Ok(updatedTask);
-    }
-
-    [Authorize]
-    [HttpPatch("{id}")]
-    public async Task<IActionResult> PatchUpdate(int id, PatchTaskItemDto request)
-    {
-        if (!User.TryGetUserId(out var userId))
-            return Unauthorized(new { message = "Invalid token: user id missing." });
-
-        var updatedTask = await _taskRepository.PatchUpdateAsync(id, userId, request);
-        if (updatedTask == null) return NotFound();
-
-        return Ok(updatedTask);
+        return NoContent();
     }
 
     [Authorize]
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete(int id)
+    public async Task<IActionResult> Delete([FromRoute] int id)
     {
         if (!User.TryGetUserId(out var userId))
             return Unauthorized(new { message = "Invalid token: user id missing." });

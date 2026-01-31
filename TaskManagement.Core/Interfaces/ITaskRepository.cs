@@ -9,10 +9,10 @@ public interface ITaskRepository
     /// <summary>
     /// Persists a new task that belongs to the specified user using the provided payload.
     /// </summary>
-    /// <param name="request">Payload containing title, description, and status for the new task.</param>
+    /// <param name="taskItem">Payload containing title, description, and status for the new task.</param>
     /// <param name="UserId">Identifier of the user that will own the created task.</param>
     /// <returns>The newly created <see cref="TaskItem"/>.</returns>
-    Task<TaskItem> CreateAsync(TaskItemDto request, int UserId);
+    Task<TaskItem> CreateAsync(TaskItem taskItem, int userId);
 
     /// <summary>
     /// Retrieves all tasks for a user, applying filtering, sorting, and pagination rules from the query object.
@@ -28,16 +28,16 @@ public interface ITaskRepository
     /// <param name="id">Identifier of the task to retrieve.</param>
     /// <param name="userId">Identifier of the user that owns the task.</param>
     /// <returns>The matching <see cref="TaskItem"/> if found; otherwise <c>null</c>.</returns>
-    Task<TaskItem?> GetByIdAsync(int id, int userId);
+    Task<TaskItem?> GetAsync(int id, int userId);
 
     /// <summary>
     /// Replaces the entire task payload for the specified user with the provided values.
     /// </summary>
     /// <param name="id">Identifier of the task to update.</param>
     /// <param name="userId">Identifier of the user that owns the task.</param>
-    /// <param name="request">Replacement payload containing the new title, description, and status.</param>
+    /// <param name="taskItem">Replacement payload containing the new title, description, and status.</param>
     /// <returns>The updated <see cref="TaskItem"/> if the record exists; otherwise <c>null</c>.</returns>
-    Task<TaskItem?> UpdateAsync(int id, int userId, TaskItemDto request);
+    Task<TaskItem?> UpdateAsync(int id, int userId, TaskItem taskItem);
 
     /// <summary>
     /// Deletes a single task that belongs to the specified user.
@@ -52,13 +52,4 @@ public interface ITaskRepository
     /// </summary>
     /// <param name="userId">Identifier of the user whose tasks should be deleted.</param>
     Task DeleteAllAsync(int userId);
-
-    /// <summary>
-    /// Applies partial updates to a task for the specified user without replacing unspecified fields.
-    /// </summary>
-    /// <param name="id">Identifier of the task to modify.</param>
-    /// <param name="userId">Identifier of the user that owns the task.</param>
-    /// <param name="request">Payload with optional fields to update.</param>
-    /// <returns>The patched <see cref="TaskItem"/> if the record exists; otherwise <c>null</c>.</returns>
-    Task<TaskItem?> PatchUpdateAsync(int id, int userId, PatchTaskItemDto request);
 }
