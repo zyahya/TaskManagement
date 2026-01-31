@@ -11,7 +11,6 @@ global using Microsoft.IdentityModel.Tokens;
 global using Scalar.AspNetCore;
 
 global using TaskManagement.Api.Filters;
-global using TaskManagement.Api.Middlewares;
 global using TaskManagement.Core.Interfaces;
 global using TaskManagement.Core.Models;
 global using TaskManagement.Core.Services;

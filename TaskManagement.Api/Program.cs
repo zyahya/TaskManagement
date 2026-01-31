@@ -78,8 +78,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseStaticFiles();
 
-app.UseMiddleware<ProfilingMiddleware>();
-
 app.UseHttpsRedirection();
 
 app.UseAuthentication();

@@ -23,9 +23,9 @@ public class TaskController : ControllerBase
         if (!User.TryGetUserId(out var userId))
             return Unauthorized(new { message = "Invalid token: user id missing." });
 
-        await _taskRepository.CreateAsync(request.Adapt<TaskItem>(), userId);
+        var createdTask = await _taskRepository.CreateAsync(request.Adapt<TaskItem>(), userId);
 
-        return CreatedAtAction(nameof(GetById), request.Adapt<TaskItem>().Id, request);
+        return CreatedAtAction(nameof(GetById), new { id = createdTask.Id }, request);
     }
 
     [Authorize]
