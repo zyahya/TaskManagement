@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 
-using TaskManagement.Core.Dtos;
 using TaskManagement.Core.Helpers;
 using TaskManagement.Core.Interfaces;
 using TaskManagement.Core.Models;
@@ -86,15 +85,15 @@ public class TaskRepository : ITaskRepository
 
     private static IQueryable<TaskItem> ApplyPagination(IQueryable<TaskItem> query, QueryObject options)
     {
-        int PageNumber = options.PageNumber < 1 ? 1 : options.PageNumber;
-        int PageSize = options.PageSize < 1 ? 5 : options.PageSize;
+        var pageNumber = options.PageNumber < 1 ? 1 : options.PageNumber;
+        var pageSize = options.PageSize < 1 ? 5 : options.PageSize;
 
         const int maxPageSize = 50;
-        PageSize = PageSize > maxPageSize ? maxPageSize : PageSize;
+        pageSize = pageSize > maxPageSize ? maxPageSize : pageSize;
 
-        var skippedValues = (PageNumber - 1) * PageSize;
+        var skippedValues = (pageNumber - 1) * pageSize;
 
-        return query.Skip(skippedValues).Take(PageSize);
+        return query.Skip(skippedValues).Take(pageSize);
     }
 
     public async Task<TaskItem?> GetAsync(int id, int userId)
