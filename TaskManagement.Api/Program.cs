@@ -19,16 +19,13 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite("Data Source=data.db");
 });
 
-builder.Services.AddControllers(options =>
-{
-    options.Filters.Add<LogActivityFilter>(); // global action filter
-    options.Filters.Add<LogSensitiveActionAttribute>();
-})
-.AddJsonOptions(options =>
-{
-    options.JsonSerializerOptions.Converters.Add(
-        new System.Text.Json.Serialization.JsonStringEnumConverter());
-});
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(
+            new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -75,8 +72,6 @@ if (app.Environment.IsDevelopment())
     //             auth.Token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
     //         }));
 }
-
-app.UseStaticFiles();
 
 app.UseHttpsRedirection();
 

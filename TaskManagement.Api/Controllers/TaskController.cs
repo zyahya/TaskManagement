@@ -1,6 +1,7 @@
 using TaskManagement.Core.Contracts.Request;
 using TaskManagement.Core.Helpers;
 using Mapster;
+using TaskManagement.Core.Contracts.Response;
 
 namespace TaskManagement.Api.Controllers;
 
@@ -34,8 +35,10 @@ public class TaskController : ControllerBase
         if (!User.TryGetUserId(out var userId))
             return Unauthorized(new { message = "Invalid token: user id missing." });
 
-        var items = await _taskRepository.GetAllAsync(query, userId);
-        return Ok(items);
+        var taskEntities = await _taskRepository.GetAllAsync(query, userId);
+        var taskResponses = taskEntities.Select(task => task.Adapt<TaskItemResponse>());
+
+        return Ok(taskResponses);
     }
 
     [Authorize]
@@ -45,10 +48,10 @@ public class TaskController : ControllerBase
         if (!User.TryGetUserId(out var userId))
             return Unauthorized(new { message = "Invalid token: user id missing." });
 
-        var item = await _taskRepository.GetAsync(id, userId);
-        if (item == null) return NotFound();
+        var task = await _taskRepository.GetAsync(id, userId);
+        if (task == null) return NotFound();
 
-        return Ok(item);
+        return Ok(task.Adapt<TaskItemResponse>());
     }
 
     [Authorize]

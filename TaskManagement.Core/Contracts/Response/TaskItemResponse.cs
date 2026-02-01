@@ -1,7 +1,9 @@
-namespace TaskManagement.Core.Contracts.Request;
+namespace TaskManagement.Core.Contracts.Response;
 
-public class TaskItemRequest
+public class TaskItemResponse
 {
+    public int Id { get; set; }
+
     public string Title { get; set; } = string.Empty;
 
     public string Description { get; set; } = string.Empty;
