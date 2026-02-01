@@ -10,6 +10,6 @@ public class CreateTaskItemValidator : AbstractValidator<CreateTaskItemRequest>
     {
         RuleFor(taskItem => taskItem.Title).NotEmpty().Length(1, 100);
         RuleFor(taskItem => taskItem.Description).Length(1, 200);
-        RuleFor(taskItem => taskItem.Status).IsInEnum();
+        RuleFor(taskItem => taskItem.Status).IsInEnum().WithMessage("'Status' must be between 0 and 2.");
     }
 }

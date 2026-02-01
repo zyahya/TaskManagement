@@ -58,9 +58,6 @@ builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
 
-builder.Services.AddScoped<IValidator<CreateTaskItemRequest>, TaskItemValidator>();
-builder.Services.AddScoped<IValidator<UserRegisterRequest>, UserRegisterValidator>();
-builder.Services.AddScoped<IValidator<UserLoginRequest>, UserLoginValidator>();
 builder.Services
     .AddValidatorsFromAssembly(Assembly.GetExecutingAssembly())
     .AddFluentValidationAutoValidation();
@@ -76,13 +73,6 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
-
-    //     app.MapScalarApiReference(options => options
-    //         .AddPreferredSecuritySchemes("BearerAuth")
-    //         .AddHttpAuthentication("BearerAuth", auth =>
-    //         {
-    //             auth.Token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
-    //         }));
 }
 
 app.UseHttpsRedirection();
