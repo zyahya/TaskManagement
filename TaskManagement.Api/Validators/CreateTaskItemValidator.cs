@@ -4,9 +4,9 @@ using TaskManagement.Core.Contracts.Request;
 
 namespace TaskManagement.Api.Validators;
 
-public class TaskItemValidator : AbstractValidator<CreateTaskItemRequest>
+public class CreateTaskItemValidator : AbstractValidator<CreateTaskItemRequest>
 {
-    public TaskItemValidator()
+    public CreateTaskItemValidator()
     {
         RuleFor(taskItem => taskItem.Title).NotEmpty().Length(1, 100);
         RuleFor(taskItem => taskItem.Description).Length(1, 200);
