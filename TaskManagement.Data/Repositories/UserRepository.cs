@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
+using TaskManagement.Core.Contracts.Request;
 using TaskManagement.Core.Dtos;
 using TaskManagement.Core.Interfaces;
 using TaskManagement.Core.Models;
@@ -27,7 +28,7 @@ public class UserRepository : IUserRepository
         return user;
     }
 
-    public async Task<TokenResponseDto?> LoginAsync(UserLoginDto request)
+    public async Task<TokenResponseDto?> LoginAsync(UserLoginRequest request)
     {
 
         var user = await AuthenticateUser(request);
@@ -36,7 +37,7 @@ public class UserRepository : IUserRepository
         return await GenerateTokensAsync(user);
     }
 
-    private async Task<User?> AuthenticateUser(UserLoginDto request)
+    private async Task<User?> AuthenticateUser(UserLoginRequest request)
     {
         var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
         if (user == null) return null;
@@ -67,7 +68,7 @@ public class UserRepository : IUserRepository
         };
     }
 
-    public async Task<User?> RegisterAsync(UserLoginDto request)
+    public async Task<User?> RegisterAsync(UserLoginRequest request)
     {
         if (await IsUserExistsAsync(request.Username)) return null;
 

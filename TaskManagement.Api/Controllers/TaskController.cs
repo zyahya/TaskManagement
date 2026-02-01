@@ -11,6 +11,7 @@ public class TaskController : ControllerBase
 {
     private readonly ITaskRepository _taskRepository;
 
+
     public TaskController(ITaskRepository taskRepository)
     {
         _taskRepository = taskRepository;
@@ -18,7 +19,7 @@ public class TaskController : ControllerBase
 
     [Authorize]
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] TaskItemRequest request)
+    public async Task<IActionResult> Create([FromBody] CreateTaskItemRequest request)
     {
         if (!User.TryGetUserId(out var userId))
             return Unauthorized(new { message = "Invalid token: user id missing." });
@@ -56,7 +57,7 @@ public class TaskController : ControllerBase
 
     [Authorize]
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update([FromRoute] int id, [FromBody] TaskItemRequest request)
+    public async Task<IActionResult> Update([FromRoute] int id, [FromBody] CreateTaskItemRequest request)
     {
         if (!User.TryGetUserId(out var userId))
             return Unauthorized(new { message = "Invalid token: user id missing." });

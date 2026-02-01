@@ -1,5 +1,7 @@
 using System.Reflection;
 
+using FluentValidation;
+
 using Mapster;
 
 using MapsterMapper;
@@ -7,10 +9,12 @@ using MapsterMapper;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.OpenApi.Models;
 
-var builder = WebApplication.CreateBuilder(args);
+using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 
-var configurationSources = builder.Configuration.Sources.ToList();
-Console.WriteLine(configurationSources);
+using TaskManagement.Api.Validators;
+using TaskManagement.Core.Contracts.Request;
+
+var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 
@@ -46,13 +50,20 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// builder.Services.AddOpenApi();
 builder.Services.AddOpenApi("v1", options => { options.AddDocumentTransformer<BearerSecuritySchemeTransformer>(); });
 builder.Services.AddSingleton(resolver => resolver.GetRequiredService<IOptions<JwtSettings>>().Value);
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ITaskRepository, TaskRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+
+builder.Services.AddScoped<IValidator<CreateTaskItemRequest>, TaskItemValidator>();
+builder.Services.AddScoped<IValidator<UserRegisterRequest>, UserRegisterValidator>();
+builder.Services.AddScoped<IValidator<UserLoginRequest>, UserLoginValidator>();
+builder.Services
+    .AddValidatorsFromAssembly(Assembly.GetExecutingAssembly())
+    .AddFluentValidationAutoValidation();
+
 
 var mappingConfig = TypeAdapterConfig.GlobalSettings;
 mappingConfig.Scan(Assembly.GetExecutingAssembly());

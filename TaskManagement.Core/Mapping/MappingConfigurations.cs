@@ -9,6 +9,6 @@ public class MappingConfigurations : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {
-        config.NewConfig<TaskItem, TaskItemRequest>();
+        config.NewConfig<TaskItem, CreateTaskItemRequest>();
     }
 }

@@ -1,3 +1,4 @@
+using TaskManagement.Core.Contracts.Request;
 using TaskManagement.Core.Dtos;
 
 namespace TaskManagement.Api.Controllers;
@@ -16,19 +17,21 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register(UserLoginDto userDto)
+    public async Task<IActionResult> Register(UserLoginRequest request)
     {
-        var user = await _userRepository.RegisterAsync(userDto);
-        if (user == null) return BadRequest("Username is already taken");
+        var user = await _userRepository.RegisterAsync(request);
+        if (user == null)
+            return BadRequest("Username is already taken");
 
         return Ok(user);
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login(UserLoginDto userDto)
+    public async Task<IActionResult> Login(UserLoginRequest request)
     {
-        var userToken = await _userRepository.LoginAsync(userDto);
-        if (userToken == null) return BadRequest("Invalid username or password");
+        var userToken = await _userRepository.LoginAsync(request);
+        if (userToken == null)
+            return BadRequest("Invalid username or password");
 
         return Ok(userToken);
     }
@@ -37,10 +40,12 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> RefreshToken(RefreshTokenRequestDto request)
     {
         var user = await _userRepository.GetByIdAsync(request.UserId);
-        if (user == null) return BadRequest("Invalid user");
+        if (user == null)
+            return BadRequest("Invalid user");
 
         var isValidRefreshToken = _authService.ValidateRefreshToken(user, request.RefreshToken);
-        if (!isValidRefreshToken) return BadRequest("Invalid refresh token");
+        if (!isValidRefreshToken)
+            return BadRequest("Invalid refresh token");
 
         var newAccessToken = _authService.CreateToken(user);
         var newRefreshToken = _authService.GenerateRefreshToken();
