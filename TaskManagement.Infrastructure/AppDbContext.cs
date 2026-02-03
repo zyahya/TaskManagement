@@ -1,3 +1,5 @@
+using System.Reflection;
+
 using Microsoft.EntityFrameworkCore;
 
 using TaskManagement.Domain.Models;
@@ -10,22 +12,8 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<TaskItem>(te =>
-        {
-            te.Property(ti => ti.Title)
-                .HasMaxLength(100);
-
-            te.Property(ti => ti.Description)
-                .HasMaxLength(200);
-
-            te.Property(ti => ti.Status)
-                .HasDefaultValue(TaskItemStatus.Pending)
-                .IsRequired();
-        });
-
-        modelBuilder.Entity<User>()
-            .HasMany(u => u.TaskItems)
-            .WithOne(t => t.User);
+        modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+        base.OnModelCreating(modelBuilder);
     }
 
     public DbSet<TaskItem> Tasks { get; set; }
