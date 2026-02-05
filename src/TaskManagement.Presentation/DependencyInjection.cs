@@ -26,10 +26,42 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddDependencyInjection(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddInfrastructureServices();
+        services.AddApplicationServices();
+        services.AddPresentationServices(configuration);
+
+        return services;
+    }
+
+
+
+    private static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
+    {
         services.AddDbContext<AppDbContext>(options =>
         {
             options.UseSqlite("Data Source=data.db");
         });
+
+        services.AddScoped<ITaskRepository, TaskRepository>();
+        services.AddScoped<IUserRepository, UserRepository>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddApplicationServices(this IServiceCollection services)
+    {
+        var mappingConfig = TypeAdapterConfig.GlobalSettings;
+        mappingConfig.Scan(Assembly.GetExecutingAssembly());
+        services.AddSingleton<IMapper>(new Mapper(mappingConfig));
+
+        return services;
+    }
+
+    private static IServiceCollection AddPresentationServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        services
+            .AddValidatorsFromAssembly(Assembly.GetExecutingAssembly())
+            .AddFluentValidationAutoValidation();
 
         services
             .AddControllers()
@@ -39,28 +71,7 @@ public static class DependencyInjection
                     new System.Text.Json.Serialization.JsonStringEnumConverter());
             });
 
-        services.AddRepositories();
         services.AddJwtAuthentication(configuration);
-        services.AddFluentValidation();
-        services.AddMapster();
-
-        return services;
-    }
-
-    private static IServiceCollection AddMapster(this IServiceCollection services)
-    {
-        var mappingConfig = TypeAdapterConfig.GlobalSettings;
-        mappingConfig.Scan(Assembly.GetExecutingAssembly());
-        services.AddSingleton<IMapper>(new Mapper(mappingConfig));
-
-        return services;
-    }
-
-    private static IServiceCollection AddFluentValidation(this IServiceCollection services)
-    {
-        services
-            .AddValidatorsFromAssembly(Assembly.GetExecutingAssembly())
-            .AddFluentValidationAutoValidation();
 
         return services;
     }
@@ -93,14 +104,6 @@ public static class DependencyInjection
                     ValidateIssuerSigningKey = true
                 };
             });
-
-        return services;
-    }
-
-    private static IServiceCollection AddRepositories(this IServiceCollection services)
-    {
-        services.AddScoped<ITaskRepository, TaskRepository>();
-        services.AddScoped<IUserRepository, UserRepository>();
 
         return services;
     }
