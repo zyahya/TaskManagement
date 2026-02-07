@@ -6,8 +6,10 @@ using Mapster;
 
 using MapsterMapper;
 
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens.Experimental;
 using Microsoft.OpenApi.Models;
 
 using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
@@ -15,35 +17,38 @@ using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 using TaskManagement.Application.Interfaces.Repositories;
 using TaskManagement.Application.Services;
 using TaskManagement.Domain.Entities;
-using TaskManagement.Domain.Repositories;
 using TaskManagement.Infrastructure;
 using TaskManagement.Infrastructure.Repositories;
 using TaskManagement.Infrastructure.Services;
 
-namespace TaskManagement.Presentation;
+namespace TaskManagement.Api;
 
 public static class DependencyInjection
 {
     public static IServiceCollection AddDependencyInjection(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddInfrastructureServices();
+        services.AddInfrastructureServices(configuration);
         services.AddApplicationServices();
         services.AddPresentationServices(configuration);
 
         return services;
     }
 
-
-
-    private static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
+    private static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
+        var connectionString = configuration.GetConnectionString("DefaultConnection") ??
+            throw new InvalidOperationException("Connection string 'DefaultConnection' is not found.");
+
         services.AddDbContext<AppDbContext>(options =>
         {
-            options.UseSqlite("Data Source=data.db");
+            options.UseSqlite(connectionString);
         });
 
+        services.AddIdentity<ApplicationUser, IdentityRole>()
+            .AddEntityFrameworkStores<AppDbContext>();
+
         services.AddScoped<ITaskRepository, TaskRepository>();
-        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IAuthService, AuthService>();
 
         return services;
     }
@@ -59,6 +64,8 @@ public static class DependencyInjection
 
     private static IServiceCollection AddPresentationServices(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddOpenApi("v1", options => { options.AddDocumentTransformer<BearerSecuritySchemeTransformer>(); });
+
         services
             .AddValidatorsFromAssembly(Assembly.GetExecutingAssembly())
             .AddFluentValidationAutoValidation();
@@ -78,32 +85,39 @@ public static class DependencyInjection
 
     private static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<JwtSettings>(configuration.GetSection("Jwt"));
+        services.AddSingleton<IJwtProvider, JwtProvider>();
 
-        services.AddOpenApi("v1", options => { options.AddDocumentTransformer<BearerSecuritySchemeTransformer>(); });
+        services.AddOptions<JwtOptions>()
+            .BindConfiguration(JwtOptions.SectionName)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 
-        services.AddSingleton(resolver => resolver.GetRequiredService<IOptions<JwtSettings>>().Value);
+        var jwtSettings = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()!;
+        var secretKey = jwtSettings.Key;
+        var issuer = jwtSettings.Issuer;
+        var audience = jwtSettings.Audience;
 
-        services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
-        services.AddScoped<IAuthService, AuthService>();
-
-        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(options =>
+        services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(options =>
+        {
+            options.SaveToken = true;
+            options.TokenValidationParameters = new TokenValidationParameters
             {
-                var jwtSection = configuration.GetSection("Jwt");
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidIssuer = jwtSection["Issuer"],
-                    ValidateAudience = true,
-                    ValidAudience = jwtSection["Audience"],
-                    ValidateLifetime = true,
-                    IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(jwtSection["Key"] ??
-                            throw new InvalidOperationException("JWT Key is missing from configuration."))),
-                    ValidateIssuerSigningKey = true
-                };
-            });
+                ValidateIssuerSigningKey = true,
+                ValidateIssuer = true,
+                ValidIssuer = issuer,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(secretKey)) ??
+                    throw new InvalidOperationException("JWT Key is missing from configuration."),
+                ValidAlgorithms = [SecurityAlgorithms.HmacSha256],
+                ValidateLifetime = true,
+                ValidAudience = audience,
+                ValidateAudience = true
+            };
+        });
 
         return services;
     }

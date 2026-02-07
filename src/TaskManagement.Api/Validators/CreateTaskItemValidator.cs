@@ -2,7 +2,7 @@ using FluentValidation;
 
 using TaskManagement.Application.Contracts.TaskItem;
 
-namespace TaskManagement.Presentation.Validators;
+namespace TaskManagement.Api.Validators;
 
 public class CreateTaskItemValidator : AbstractValidator<CreateTaskItemRequest>
 {
