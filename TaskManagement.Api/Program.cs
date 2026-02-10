@@ -1,4 +1,6 @@
 using TaskManagement.Api;
+using TaskManagement.Domain.Entities;
+using TaskManagement.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 

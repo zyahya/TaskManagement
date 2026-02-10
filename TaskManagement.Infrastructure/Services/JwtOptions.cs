@@ -15,6 +15,9 @@ public class JwtOptions
     [Required]
     public string Audience { get; set; } = string.Empty;
 
-    [Range(1, int.MaxValue, ErrorMessage = "Expiries minutes must be greater than 1")]
-    public int ExpiriesMinutes { get; set; }
+    [Range(1, int.MaxValue, ErrorMessage = "Expiry minutes must be greater than 1")]
+    public int ExpiryMinutes { get; set; }
+
+    [Range(1, int.MaxValue, ErrorMessage = "Expiry days must be greater than 1")]
+    public int RefreshTokenExpiryDays { get; set; }
 }

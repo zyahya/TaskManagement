@@ -1,9 +1,11 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.IdentityModel.Tokens.Experimental;
 
 using TaskManagement.Application.Services;
 using TaskManagement.Domain.Entities;
@@ -19,12 +21,20 @@ public class JwtProvider : IJwtProvider
         _jwtOptions = jwtOptions.Value;
     }
 
+    public (string refreshToken, DateTime expiriesIn) GenerateRefreshToken()
+    {
+        var refreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+        var expiriesIn = DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenExpiryDays);
+
+        return (refreshToken, expiriesIn);
+    }
+
     public (string token, int expiriesIn) GenerateTokenAsync(ApplicationUser user)
     {
         var secretKey = _jwtOptions.Key;
         var issuer = _jwtOptions.Issuer;
         var audience = _jwtOptions.Audience;
-        var expiresMinutes = _jwtOptions.ExpiriesMinutes;
+        var expiresMinutes = _jwtOptions.ExpiryMinutes;
 
         Claim[] claims = [
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
@@ -51,5 +61,33 @@ public class JwtProvider : IJwtProvider
             token: new JwtSecurityTokenHandler().WriteToken(token),
             expiriesIn: expiresMinutes * 60
         );
+    }
+
+    public string? ValidateToken(string token)
+    {
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_jwtOptions.Key));
+
+        try
+        {
+            var validationParameters = new TokenValidationParameters
+            {
+                IssuerSigningKey = symmetricSecurityKey,
+                ValidateIssuerSigningKey = true,
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                ClockSkew = TimeSpan.Zero
+            };
+
+            tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
+
+            var jwtToken = (JwtSecurityToken)validatedToken;
+
+            return jwtToken.Claims.First(x => x.Type == JwtRegisteredClaimNames.Sub).Value;
+        }
+        catch
+        {
+            return null;
+        }
     }
 }

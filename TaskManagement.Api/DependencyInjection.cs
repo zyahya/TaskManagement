@@ -41,7 +41,7 @@ public static class DependencyInjection
 
         services.AddDbContext<AppDbContext>(options =>
         {
-            options.UseSqlite(connectionString);
+            options.UseSqlServer(connectionString);
         });
 
         services.AddIdentity<ApplicationUser, IdentityRole>()
